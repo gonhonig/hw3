@@ -158,7 +158,7 @@ def normal_pdf(x, mean, std):
     ###########################################################################
     # TODO: Implement the function.                                           #
     ###########################################################################
-    p = (1 / math.sqrt(2 * math.pi * (std ** 2)) * np.exp(-((x - mean) ** 2) / (2 * (std ** 2))))
+    p = (1 / math.sqrt(2 * np.pi * (std ** 2)) * np.exp(-((x - mean) ** 2) / (2 * (std ** 2))))
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -181,8 +181,8 @@ class NaiveNormalClassDistribution():
         self.class_value = class_value
         self.class_dataset = self.dataset[self.dataset[:,-1] == self.class_value]
         self.prior = self.get_prior()
-        self.mean = estimate_mean(dataset[:,:-1])
-        self.std = estimate_std(dataset[:,:-1], self.mean)
+        self.mean = np.mean(self.class_dataset[:,:-1], axis=0)
+        self.std = np.std(self.class_dataset[:,:-1], axis=0)
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
@@ -232,14 +232,6 @@ class NaiveNormalClassDistribution():
         return posterior
 
 
-def estimate_mean(dataset):
-    return np.sum(dataset, axis=0) / dataset.shape[0]
-
-def estimate_std(dataset, mean):
-    avg = dataset - mean
-    return np.diagonal(avg.T.dot(avg) / dataset.shape[0])
-
-
 class MAPClassifier():
     def __init__(self, ccd0 , ccd1):
         """
@@ -258,8 +250,8 @@ class MAPClassifier():
         ###########################################################################
         # TODO: Implement the function.                                           #
         ###########################################################################
-        self.ccd0 : NaiveNormalClassDistribution = ccd0
-        self.ccd1 : NaiveNormalClassDistribution = ccd1
+        self.ccd0 = ccd0
+        self.ccd1 = ccd1
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
@@ -321,14 +313,13 @@ def multi_normal_pdf(x, mean, cov):
     ###########################################################################
     # TODO: Implement the function.                                           #
     ###########################################################################
-    pass
+    pdf = ((2*np.pi) ** -(x.shape[0]/2))*((np.linalg.det(cov)) ** (-0.5)) * np.exp(-0.5 * ((x-mean).T.dot(np.linalg.inv(cov))).dot(x-mean))
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
     return pdf
 
 class MultiNormalClassDistribution():
-
     def __init__(self, dataset, class_value):
         """
         A class which encapsulate the relevant parameters(mean, cov matrix) for a class conditinoal multi normal distribution.
@@ -341,7 +332,12 @@ class MultiNormalClassDistribution():
         ###########################################################################
         # TODO: Implement the function.                                           #
         ###########################################################################
-        pass
+        self.class_value = class_value
+        self.dataset = dataset
+        self.class_dataset = self.dataset[self.dataset[:,-1] == self.class_value]
+        self.mean = np.mean(self.class_dataset[:,:-1], axis=0)
+        self.cov =  np.cov(self.class_dataset[:,:-1], rowvar=False)
+        self.prior = self.get_prior()
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
@@ -354,7 +350,7 @@ class MultiNormalClassDistribution():
         ###########################################################################
         # TODO: Implement the function.                                           #
         ###########################################################################
-        pass
+        prior = self.class_dataset.shape[0] / self.dataset.shape[0]
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
@@ -368,7 +364,7 @@ class MultiNormalClassDistribution():
         ###########################################################################
         # TODO: Implement the function.                                           #
         ###########################################################################
-        pass
+        likelihood = multi_normal_pdf(x[:-1], self.mean, self.cov)
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
@@ -383,7 +379,7 @@ class MultiNormalClassDistribution():
         ###########################################################################
         # TODO: Implement the function.                                           #
         ###########################################################################
-        pass
+        posterior = self.get_instance_likelihood(x) * self.prior
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
@@ -403,7 +399,8 @@ class MaxPrior():
         ###########################################################################
         # TODO: Implement the function.                                           #
         ###########################################################################
-        pass
+        self.ccd0 = ccd0
+        self.ccd1 = ccd1
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
@@ -421,7 +418,7 @@ class MaxPrior():
         ###########################################################################
         # TODO: Implement the function.                                           #
         ###########################################################################
-        pass
+        pred = 0 if self.ccd0.get_instance_posterior(x) > self.ccd1.get_instance_posterior(x) else 1
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
