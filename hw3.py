@@ -575,7 +575,7 @@ class MAPClassifier_DNB():
         ###########################################################################
         # TODO: Implement the function.                                           #
         ###########################################################################
-        pred = 0 if self.ccd0.get_instance_likelihood(x) > self.ccd1.get_instance_likelihood(x) else 1
+        pred = 0 if self.ccd0.get_instance_posterior(x) > self.ccd1.get_instance_posterior(x) else 1
         ###########################################################################
         #                             END OF YOUR CODE                            #
         ###########################################################################
